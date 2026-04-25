@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Respiratory Disease Classifier</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Respiratory Disease Classifier</h1>
+            <p>Upload an audio recording or record your breath/cough to analyze for Asthma or COPD.</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="tabs">
+                    <button class="tab-btn active" id="tab-upload">Upload File</button>
+                    <button class="tab-btn" id="tab-record">Record Audio</button>
+                </div>
+
+                <div class="tab-content active" id="content-upload">
+                    <div class="upload-area" id="drop-area">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        <p>Drag and drop an audio file here or</p>
+                        <input type="file" id="file-input" accept=".wav,audio/wav" hidden>
+                        <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">Browse Files</button>
+                        <p class="file-name" id="file-name-display"></p>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="content-record">
+                    <div class="record-area">
+                        <div class="mic-icon" id="mic-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                        </div>
+                        <p id="record-status">Click the microphone to start recording</p>
+                        <p id="record-timer" class="hidden">00:00</p>
+                        <audio id="audio-preview" controls class="hidden"></audio>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-submit" id="submit-btn" disabled>Analyze Audio</button>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="hidden">
+                <div class="spinner"></div>
+                <p>Analyzing audio...</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="card hidden">
+                <h2>Analysis Results</h2>
+                <div class="result-header">
+                    <span class="disease-name" id="pred-disease">Asthma</span>
+                    <span class="confidence-badge" id="pred-confidence">95%</span>
+                </div>
+                
+                <div class="bars-container" id="bars-container">
+                    <!-- Bars injected by JS -->
+                </div>
+                <p class="disclaimer">Note: This tool is for demonstration purposes only and should not be used as a substitute for professional medical advice.</p>
+            </div>
+        </main>
+    </div>
+    <script src="script.js?v=2"></script>
+</body>
+</html>
