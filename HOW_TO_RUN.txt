@@ -1,0 +1,191 @@
+================================================================
+  BreatheX AI — AI Respiratory Disease Classification System
+  HOW TO RUN (Full Setup Guide)
+================================================================
+
+================================================================
+  PRE-REQUISITES (Make sure these are installed)
+================================================================
+
+  1. Python 3.12+       → https://www.python.org/downloads/
+  2. Node.js 18+        → https://nodejs.org/
+  3. MySQL Server       → https://dev.mysql.com/downloads/mysql/
+     └─ Must be running on localhost:3306
+        username : root
+        password : prakhar22@
+
+================================================================
+  STEP 1 — INSTALL BACKEND DEPENDENCIES (Run Once)
+================================================================
+
+  Open a terminal in the PROJECT ROOT:
+  d:\Antigravity Projects\Collage Project\Cough_Identification\
+
+  Run:
+  -------------------------------------------------------
+  pip install sqlalchemy pymysql python-jose[cryptography] passlib[bcrypt] fastapi uvicorn python-multipart email-validator
+  -------------------------------------------------------
+
+  (All ML packages like torch, librosa etc. should already
+   be installed from the previous setup.)
+
+================================================================
+  STEP 2 — INSTALL FRONTEND DEPENDENCIES (Run Once)
+================================================================
+
+  Open a terminal and navigate to the frontend folder:
+  d:\Antigravity Projects\Collage Project\Cough_Identification\frontend\
+
+  Run:
+  -------------------------------------------------------
+  npm install
+  -------------------------------------------------------
+
+================================================================
+  STEP 3 — START THE BACKEND SERVER
+================================================================
+
+  Open Terminal #1 and navigate to the backend folder:
+  d:\Antigravity Projects\Collage Project\Cough_Identification\backend\
+
+  Run:
+  -------------------------------------------------------
+  uvicorn main:app --reload --host 0.0.0.0 --port 8000
+  -------------------------------------------------------
+
+  ✅ First run will automatically:
+     - Create the MySQL database  "respiratory_ai"
+     - Create the "users" table
+     - Create the "predictions" table
+
+  Backend will be live at:  http://127.0.0.1:8000
+  API Docs (Swagger UI) at: http://127.0.0.1:8000/docs
+
+================================================================
+  STEP 4 — START THE FRONTEND SERVER
+================================================================
+
+  Open Terminal #2 and navigate to the frontend folder:
+  d:\Antigravity Projects\Collage Project\Cough_Identification\frontend\
+
+  Run:
+  -------------------------------------------------------
+  npm run dev
+  -------------------------------------------------------
+
+  Frontend will be live at: http://localhost:5173
+
+================================================================
+  STEP 5 — OPEN THE APP
+================================================================
+
+  Open your browser and go to:
+  -------------------------------------------------------
+  http://localhost:5173
+  -------------------------------------------------------
+
+  You will see the Login page.
+  Click "Create one" to register a new account.
+  After login you will be taken to the Dashboard.
+
+================================================================
+  API ENDPOINTS (Reference)
+================================================================
+
+  POST   /auth/signup       → Register a new user
+  POST   /auth/login        → Login and get JWT token
+  GET    /me                → Get logged-in user profile
+  POST   /predict           → Upload .wav file → get disease prediction
+  GET    /history/          → Get all predictions for logged-in user
+  DELETE /history/{id}      → Delete a specific prediction
+
+================================================================
+  DATABASE DETAILS (MySQL)
+================================================================
+
+  Host     : localhost
+  Port     : 3306
+  Username : root
+  Password : prakhar22@
+  Database : respiratory_ai (auto-created)
+
+  Tables auto-created on first backend startup:
+  - users       (id, name, email, password, created_at)
+  - predictions (id, user_id, filename, result, confidence,
+                 all_scores, created_at)
+
+================================================================
+  PROJECT FOLDER STRUCTURE (Quick Reference)
+================================================================
+
+  Cough_Identification/
+  ├── backend/
+  │   ├── main.py              ← Start point for backend
+  │   ├── database.py          ← MySQL connection config
+  │   ├── models/              ← DB table definitions
+  │   ├── schemas/             ← API data validators
+  │   ├── auth/                ← JWT + auth logic
+  │   ├── routes/              ← API route handlers
+  │   └── requirements.txt     ← Python dependencies
+  │
+  ├── frontend/
+  │   ├── src/
+  │   │   ├── pages/           ← Login, Signup, Dashboard,
+  │   │   │                       Test, History, Profile
+  │   │   ├── components/      ← Navbar, ProtectedRoute
+  │   │   ├── services/api.js  ← Axios API calls
+  │   │   └── context/         ← Auth state management
+  │   └── package.json
+  │
+  ├── ml/                      ← ML pipeline (DO NOT MODIFY)
+  │   ├── inference.py         ← DiseasePredictor class
+  │   ├── model.py             ← ResNet18 CNN model
+  │   ├── train.py             ← Training script
+  │   └── dataset.py           ← Data loader
+  │
+  ├── disease_classifier.pth   ← Trained model weights
+  └── db_setup.sql             ← DB schema reference
+
+================================================================
+  COMMON ERRORS & FIXES
+================================================================
+
+  ERROR: Can't connect to MySQL
+  FIX  : Make sure MySQL Server is running.
+         Open MySQL Workbench or run: net start MySQL80
+
+  ERROR: Module not found (Python)
+  FIX  : Run: pip install -r backend/requirements.txt
+
+  ERROR: npm command not found
+  FIX  : Install Node.js from https://nodejs.org/
+
+  ERROR: Port 8000 already in use
+  FIX  : Change port → uvicorn main:app --port 8001
+         Then update frontend/src/services/api.js:
+         const BASE_URL = 'http://127.0.0.1:8001'
+
+  ERROR: CORS error in browser
+  FIX  : Make sure backend is running BEFORE opening frontend.
+         Backend must be on port 8000.
+
+================================================================
+  QUICK COMMANDS SUMMARY
+================================================================
+
+  # Install backend deps (once)
+  pip install sqlalchemy pymysql python-jose[cryptography] passlib[bcrypt] fastapi uvicorn python-multipart email-validator
+
+  # Install frontend deps (once)
+  cd frontend && npm install
+
+  # Run backend  (Terminal 1)
+  cd backend && uvicorn main:app --reload --port 8000
+
+  # Run frontend (Terminal 2)
+  cd frontend && npm run dev
+
+  # Open app
+  http://localhost:5173
+
+================================================================
