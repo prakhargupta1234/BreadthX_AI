@@ -6,6 +6,7 @@ import shutil
 import uuid
 import json
 import sys
+import traceback
 
 from database import get_db
 from models.prediction import Prediction
@@ -29,7 +30,35 @@ predictor = DiseasePredictor(model_path=os.path.abspath(_model_path))
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+ALLOWED_EXTENSIONS = (".wav", ".webm", ".ogg", ".mp3", ".m4a")
+
 router = APIRouter(tags=["Prediction"])
+
+
+def _convert_to_wav(src_path: str, dst_path: str) -> bool:
+    """Convert any audio file to 16-bit PCM WAV using available tools."""
+    try:
+        import soundfile as sf
+        import librosa
+
+        # librosa can read many formats via soundfile/audioread
+        audio_np, sr = librosa.load(src_path, sr=16000)
+        sf.write(dst_path, audio_np, 16000, subtype="PCM_16")
+        return True
+    except Exception as e:
+        print(f"[predict] soundfile/librosa conversion failed: {e}")
+
+    # Fallback: try pydub (needs ffmpeg)
+    try:
+        from pydub import AudioSegment
+        seg = AudioSegment.from_file(src_path)
+        seg = seg.set_frame_rate(16000).set_channels(1).set_sample_width(2)
+        seg.export(dst_path, format="wav")
+        return True
+    except Exception as e:
+        print(f"[predict] pydub conversion failed: {e}")
+
+    return False
 
 
 # ── POST /predict ──────────────────────────────────────────────────────────────
@@ -39,23 +68,40 @@ def predict_audio(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if not file.filename.lower().endswith(".wav"):
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unsupported file format. Please upload a .wav file.",
+            detail=f"Unsupported file format '{ext}'. Allowed: {', '.join(ALLOWED_EXTENSIONS)}",
         )
 
     file_id = str(uuid.uuid4())
-    temp_path = os.path.join(UPLOAD_DIR, f"{file_id}.wav")
+    raw_path = os.path.join(UPLOAD_DIR, f"{file_id}{ext}")
+    wav_path = os.path.join(UPLOAD_DIR, f"{file_id}.wav")
 
     try:
-        with open(temp_path, "wb") as buffer:
+        # Save uploaded bytes
+        with open(raw_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
+        print(f"[predict] Saved upload: {raw_path}  size={os.path.getsize(raw_path)}")
+
+        # If not already wav, convert
+        if ext != ".wav":
+            ok = _convert_to_wav(raw_path, wav_path)
+            if not ok:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Could not convert audio to WAV. Please upload a .wav file instead.",
+                )
+        else:
+            wav_path = raw_path  # already wav
+
         # Run inference (ML code untouched)
-        ml_result = predictor.predict(temp_path)
+        ml_result = predictor.predict(wav_path)
 
         if "error" in ml_result:
+            print(f"[predict] ML error: {ml_result['error']}")
             raise HTTPException(status_code=500, detail=ml_result["error"])
 
         # Normalize output: confidence 0→1 to percentage
@@ -83,6 +129,15 @@ def predict_audio(
             "created_at": record.created_at,
         }
 
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        for p in (raw_path, wav_path):
+            if p and os.path.exists(p):
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass

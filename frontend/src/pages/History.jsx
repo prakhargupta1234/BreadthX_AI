@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { historyAPI } from '../services/api';
 import Navbar from '../components/Navbar';
-import { Trash2, History as HistoryIcon, FileAudio } from 'lucide-react';
+import { Trash2, History as HistoryIcon, FileAudio, Calendar } from 'lucide-react';
 
 function getBadgeClass(r) {
   if (!r) return 'badge-unknown';
@@ -15,6 +15,8 @@ export default function History() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     historyAPI.getAll()
@@ -30,6 +32,19 @@ export default function History() {
     finally { setDeletingId(null); }
   };
 
+  const filteredRecords = records.filter(r => {
+    if (!startDate && !endDate) return true;
+    const d = new Date(r.created_at);
+    const yy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const recordDate = `${yy}-${mm}-${dd}`;
+    
+    if (startDate && recordDate < startDate) return false;
+    if (endDate && recordDate > endDate) return false;
+    return true;
+  });
+
   return (
     <div className="app-layout">
       <Navbar />
@@ -42,19 +57,48 @@ export default function History() {
         <motion.div className="glass-card"
           initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
 
-          <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <HistoryIcon size={17} color="var(--accent-blue)" />
-            <span style={{ fontWeight: 700, fontSize: 15 }}>
-              {loading ? 'Loading...' : `${records.length} record${records.length !== 1 ? 's' : ''}`}
-            </span>
+          <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <HistoryIcon size={17} color="var(--accent-blue)" />
+              <span style={{ fontWeight: 700, fontSize: 15 }}>
+                {loading ? 'Loading...' : `${filteredRecords.length} record${filteredRecords.length !== 1 ? 's' : ''}`}
+              </span>
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <Calendar size={16} color="var(--text-secondary)" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>From:</span>
+                <input 
+                  type="date" 
+                  className="glass-input" 
+                  style={{ padding: '6px 12px', fontSize: 13, border: '1px solid #e2e8f0', borderRadius: 8, color: 'var(--text-primary)' }}
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>To:</span>
+                <input 
+                  type="date" 
+                  className="glass-input" 
+                  style={{ padding: '6px 12px', fontSize: 13, border: '1px solid #e2e8f0', borderRadius: 8, color: 'var(--text-primary)' }}
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+              {(startDate || endDate) && (
+                <button onClick={() => { setStartDate(''); setEndDate(''); }} style={{ background: 'none', border: 'none', color: 'var(--accent-blue)', fontSize: 13, cursor: 'pointer', fontWeight: 600 }}>Clear</button>
+              )}
+            </div>
           </div>
 
           {loading ? (
             <div style={{ padding: 60, textAlign: 'center' }}><div className="spinner" style={{ margin: '0 auto' }} /></div>
-          ) : records.length === 0 ? (
+          ) : filteredRecords.length === 0 ? (
             <div style={{ padding: 64, textAlign: 'center', color: 'var(--text-muted)' }}>
               <FileAudio size={48} style={{ margin: '0 auto 12px', opacity: 0.3 }} />
-              <p>No predictions yet. Start by running a test!</p>
+              <p>{records.length === 0 ? 'No predictions yet. Start by running a test!' : 'No records found for the selected date.'}</p>
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
@@ -64,7 +108,7 @@ export default function History() {
                 </thead>
                 <tbody>
                   <AnimatePresence>
-                    {records.map((rec, idx) => (
+                    {filteredRecords.map((rec, idx) => (
                       <motion.tr key={rec.id}
                         initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, height: 0 }} transition={{ delay: idx * 0.03 }}>
