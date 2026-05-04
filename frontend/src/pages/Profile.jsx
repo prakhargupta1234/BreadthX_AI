@@ -15,7 +15,7 @@ export default function Profile() {
       const joinDate = new Date(user?.created_at);
       const days = Math.floor((Date.now() - joinDate) / 86400000);
       setStats({ total: history.length, lastResult: history[0]?.result ?? '—', joinedDays: isNaN(days) ? 0 : days });
-    }).catch(() => {});
+    }).catch(() => { });
   }, [user]);
 
   const initials = user?.name?.split(' ').map(w => w[0]).join('').toUpperCase() || '?';
@@ -29,7 +29,7 @@ export default function Profile() {
 
   const profileStats = [
     { label: 'Total Tests', value: stats.total },
-    { label: 'Days Active', value: stats.joinedDays },
+    // { label: 'Days Active', value: stats.joinedDays },
     { label: 'Last Result', value: stats.lastResult },
   ];
 

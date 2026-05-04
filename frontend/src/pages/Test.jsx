@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { predictAPI } from '../services/api';
 import Navbar from '../components/Navbar';
-import { Mic, MicOff, FileAudio, CheckCircle, AlertCircle, X, History, RotateCcw, Shield, ShieldAlert, ShieldX, Loader } from 'lucide-react';
+import { Mic, MicOff, FileAudio, CheckCircle, AlertCircle, X, History, RotateCcw, Shield, ShieldAlert, ShieldX, Loader, Activity } from 'lucide-react';
 
 /* ── helpers ──────────────────────────────────────────────── */
 function getColor(l) {
@@ -116,8 +116,8 @@ function AnalysisProgress({ step }) {
             transition: 'all 0.3s'
           }}>
             {i < step ? <CheckCircle size={14} color="#fff" /> :
-             i === step ? <Loader size={14} color="var(--accent-blue)" className="spin-slow" /> :
-             <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{i + 1}</span>}
+              i === step ? <Loader size={14} color="var(--accent-blue)" className="spin-slow" /> :
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>{i + 1}</span>}
           </div>
           <span style={{ fontSize: 13, fontWeight: i <= step ? 600 : 400, color: i <= step ? 'var(--text-primary)' : 'var(--text-muted)' }}>{s}</span>
         </motion.div>
@@ -148,34 +148,31 @@ function ResultsModal({ result, onClose, onNewTest }) {
           <X size={18} />
         </button>
 
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <motion.div style={{
-            width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px',
-            background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: `2px solid ${color}30`
-          }} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}>
-            <ResultIcon size={26} color={color} />
-          </motion.div>
-          <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>Analysis Complete</h2>
-          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>AI-powered respiratory assessment result</p>
+        {/* Header - Official Letterhead Style */}
+        <div style={{ textAlign: 'center', marginBottom: 24, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 }}>
+          <img src="/logo-dark-text.png" alt="BreatheX AI" style={{ height: 32, objectFit: 'contain', margin: '0 auto 12px', display: 'block' }} />
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4 }}>Analysis Report</h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Generated on {new Date().toLocaleString()}</p>
         </div>
 
         {/* Result badge + confidence ring */}
-        <div style={{ display: 'flex', gap: 24, marginBottom: 28, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 24, marginBottom: 28, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', background: `${color}0a`, padding: '20px', borderRadius: 16, border: `1px solid ${color}20` }}>
           <div style={{ textAlign: 'center' }}>
             <ConfidenceRing value={result.confidence} color={color} />
           </div>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', flex: 1, minWidth: 150 }}>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }} style={{ marginBottom: 12 }}>
+              <ResultIcon size={32} color={color} style={{ margin: '0 auto' }} />
+            </motion.div>
             <span className={`badge ${getBadgeClass(result.prediction)}`}
-              style={{ fontSize: 15, padding: '8px 22px', fontWeight: 700 }}>{result.prediction}</span>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10 }}>Primary Classification</p>
+              style={{ fontSize: 18, padding: '10px 32px', fontWeight: 800, borderRadius: '12px' }}>{result.prediction}</span>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Primary Classification</p>
           </div>
         </div>
 
         {/* Probabilities */}
         <div style={{ background: '#f8fafc', borderRadius: 14, padding: '20px 22px', marginBottom: 20, border: '1px solid #e2e8f0' }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 14 }}>
+          <p style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 16, borderLeft: '3px solid var(--accent-blue)', paddingLeft: 10 }}>
             Disease Probability Breakdown
           </p>
           {Object.entries(result.all_scores).sort(([, a], [, b]) => b - a).map(([l, s]) => <Bar key={l} label={l} score={s} />)}
@@ -183,23 +180,27 @@ function ResultsModal({ result, onClose, onNewTest }) {
 
         {/* Recommendation */}
         <div style={{ background: `${color}08`, borderRadius: 12, padding: '16px 20px', marginBottom: 24, border: `1px solid ${color}18` }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
-            💡 Recommendation
+          <p style={{ fontSize: 13, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>
+            💡 Clinical Recommendation
           </p>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, fontWeight: 500 }}>
             {getRecommendation(result.prediction)}
           </p>
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10 }} className="no-print">
+          <button onClick={() => window.print()} className="btn-gradient"
+            style={{ flex: 1, padding: '12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#1e293b' }}>
+            🖨️ Print Report
+          </button>
           <button onClick={onNewTest} className="btn-gradient"
             style={{ flex: 1, padding: '12px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <RotateCcw size={15} /> Run Another Test
+            <RotateCcw size={15} /> New Test
           </button>
           <button onClick={onClose}
             style={{ flex: 1, padding: '12px', fontSize: 14, fontWeight: 600, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <History size={15} /> View Details
+            <X size={15} /> Close
           </button>
         </div>
 
@@ -336,7 +337,7 @@ export default function Test() {
       <main className="main-content">
         <div className="page-header">
           <h1>Respiratory Analysis</h1>
-          <p>Upload or record a cough audio sample for AI disease classification</p>
+          <p>Upload a cough audio sample for AI disease classification</p>
         </div>
 
         <div className="grid-cols-2" style={{ alignItems: 'start' }}>
@@ -344,20 +345,18 @@ export default function Test() {
           <motion.div className="glass-card" style={{ padding: 28 }}
             initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.4 }}>
 
-            {/* Mode toggle */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24, background: '#f1f5f9', padding: 4, borderRadius: 10 }}>
-              {['upload', 'record'].map(m => (
-                <button key={m} onClick={() => { setMode(m); setResult(null); setShowModal(false); }}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    fontSize: 13, fontWeight: 600,
-                    background: mode === m ? 'var(--gradient-primary)' : 'transparent',
-                    color: mode === m ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s'
-                  }}>
-                  {m === 'upload' ? '📁 Upload File' : '🎙️ Record Audio'}
-                </button>
-              ))}
+            {/* Guidance Section */}
+            <div style={{ marginBottom: 24, padding: '16px 20px', background: 'rgba(37, 99, 235, 0.04)', borderRadius: '12px', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
+              <h4 style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent-blue)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                💡 Quick Instructions
+              </h4>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                <li>Ensure the audio is in <b>.wav</b> format.</li>
+                <li>The file should clearly capture the <b>cough sounds</b>.</li>
+                <li>Keep ambient noise to a minimum for better accuracy.</li>
+              </ul>
             </div>
+
 
             {/* Upload zone */}
             {mode === 'upload' && (
@@ -380,7 +379,7 @@ export default function Test() {
               </div>
             )}
 
-            {/* Record zone */}
+            {/* Record zone - Commented out
             {mode === 'record' && (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <div style={{ position: 'relative', display: 'inline-block', marginBottom: 20 }}>
@@ -404,6 +403,7 @@ export default function Test() {
                 </p>
               </div>
             )}
+            */}
 
             {/* Analyze button */}
             <button id="analyze-btn" className="btn-gradient" onClick={predict}
@@ -431,12 +431,20 @@ export default function Test() {
                 </button>
               </div>
             ) : (
-              <>
-                <AlertCircle size={48} style={{ color: 'var(--text-muted)', opacity: 0.4, marginBottom: 16 }} />
-                <p style={{ color: 'var(--text-muted)', fontSize: 14, textAlign: 'center' }}>
-                  Your analysis result will appear here after processing
+              <div style={{ textAlign: 'center' }}>
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ repeat: Infinity, duration: 2, repeatType: 'reverse', ease: "easeInOut" }}
+                  style={{ width: 84, height: 84, borderRadius: '50%', background: 'rgba(37,99,235,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: '1px solid rgba(37,99,235,0.1)' }}
+                >
+                  <Activity size={38} color="#2563eb" strokeWidth={2} />
+                </motion.div>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>Ready for Analysis</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5, maxWidth: 260, margin: '0 auto' }}>
+                  Upload a <b>.wav</b> file or record your audio sample to generate a comprehensive respiratory report.
                 </p>
-              </>
+              </div>
             )}
           </motion.div>
         </div>

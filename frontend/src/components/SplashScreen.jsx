@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity } from 'lucide-react';
 
 export default function SplashScreen({ onComplete }) {
   const [phase, setPhase] = useState(0); // 0=logo, 1=text, 2=exit
@@ -60,9 +59,7 @@ export default function SplashScreen({ onComplete }) {
             animate={{ scale: 1, opacity: 1, rotateY: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}>
             <div className="splash-logo-glow" />
-            <div className="splash-logo-icon">
-              <Activity size={56} color="#fff" strokeWidth={2.5} />
-            </div>
+            <img src="/logo-light-text.png" alt="BreatheX AI Logo" style={{ height: 80, objectFit: 'contain', position: 'relative', zIndex: 2, filter: 'drop-shadow(0 4px 24px rgba(59, 130, 246, 0.35))' }} />
           </motion.div>
 
           {/* Text */}
@@ -70,10 +67,6 @@ export default function SplashScreen({ onComplete }) {
             initial={{ opacity: 0, y: 20 }}
             animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}>
-            <h1 className="splash-title">
-              <span className="splash-title-gradient">BreatheX</span> AI
-            </h1>
-            <p className="splash-subtitle">Intelligent Respiratory Disease Classification</p>
 
             {/* Loading bar */}
             <div className="splash-loader-track">

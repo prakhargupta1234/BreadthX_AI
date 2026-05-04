@@ -55,17 +55,27 @@ export default function Signup() {
   return (
     <div className="auth-page">
       <div className="auth-bg" />
+      <div className="auth-bg-overlay" />
+
+      {/* Top Left Logo */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        style={{ position: 'absolute', top: 32, left: 40, zIndex: 10, display: 'flex', alignItems: 'center' }}
+      >
+        <img src="/logo-light-text.png" alt="BreatheX AI" style={{ height: 42, objectFit: 'contain' }} />
+      </motion.div>
+
       <motion.div className="auth-card"
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}>
 
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: 'var(--gradient-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', boxShadow: '0 6px 24px rgba(37,99,235,0.25)' }}>
-            <Activity size={28} color="#fff" />
-          </div>
+          <img src="/logo-dark-text.png" alt="BreatheX AI Logo" style={{ height: 48, objectFit: 'contain', margin: '0 auto 18px', display: 'block' }} />
           <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.5px', color: 'var(--text-primary)' }}>Create account</h1>
-          <p style={{ color: 'var(--text-secondary)', marginTop: 8, fontSize: 14 }}>Join BreatheX AI — respiratory disease detection</p>
+          <p style={{ color: 'var(--text-secondary)', marginTop: 8, fontSize: 14 }}>Join BreatheX AI for advanced analytics</p>
         </div>
 
         <AnimatePresence>
@@ -85,7 +95,7 @@ export default function Signup() {
         <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {fields.map(({ id, name, type, placeholder, label, icon: Icon }) => (
             <div key={name}>
-              <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>{label}</label>
+              <label htmlFor={id} style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>{label}</label>
               <div style={{ position: 'relative' }}>
                 <Icon size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input 
@@ -112,6 +122,21 @@ export default function Signup() {
           Already have an account?{' '}
           <Link to="/login" style={{ color: 'var(--accent-blue)', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
         </p>
+      </motion.div>
+
+      {/* Footer */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        style={{ position: 'absolute', bottom: 32, left: 40, right: 40, zIndex: 10, display: 'flex', justifyContent: 'space-between', color: 'rgba(255,255,255,0.7)', fontSize: 13, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: 20 }}
+      >
+        <span>© 2026 BreatheX AI. All Rights Reserved.</span>
+        <div style={{ display: 'flex', gap: 24 }}>
+          <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={(e)=>e.target.style.color='#fff'} onMouseLeave={(e)=>e.target.style.color='rgba(255,255,255,0.7)'}>Privacy Policy</span>
+          <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={(e)=>e.target.style.color='#fff'} onMouseLeave={(e)=>e.target.style.color='rgba(255,255,255,0.7)'}>Terms of Service</span>
+          <span style={{ cursor: 'pointer', transition: 'color 0.2s' }} onMouseEnter={(e)=>e.target.style.color='#fff'} onMouseLeave={(e)=>e.target.style.color='rgba(255,255,255,0.7)'}>Contact Support</span>
+        </div>
       </motion.div>
     </div>
   );

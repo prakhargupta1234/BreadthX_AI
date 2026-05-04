@@ -98,35 +98,34 @@ function ReportModal({ item, onClose }) {
         </button>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <motion.div style={{
-            width: 52, height: 52, borderRadius: '50%', margin: '0 auto 14px',
-            background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: `2px solid ${color}30`
-          }} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }}>
-            <ResultIcon size={24} color={color} />
-          </motion.div>
-          <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Test Report</h2>
-          <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 24, borderBottom: '1px solid #e2e8f0', paddingBottom: 16 }}>
+          <img src="/logo-dark-text.png" alt="BreatheX AI" style={{ height: 32, objectFit: 'contain', margin: '0 auto 12px', display: 'block' }} />
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text-primary)', marginBottom: 4 }}>Analysis Report</h2>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             <FileAudio size={12} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
             {item.filename} · {new Date(item.created_at).toLocaleString()}
           </p>
         </div>
 
-        {/* Result + Ring */}
-        <div style={{ display: 'flex', gap: 20, marginBottom: 24, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <ConfidenceRing value={item.confidence} color={color} />
+        {/* Result badge + confidence ring */}
+        <div style={{ display: 'flex', gap: 24, marginBottom: 28, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', background: `${color}0a`, padding: '20px', borderRadius: 16, border: `1px solid ${color}20` }}>
           <div style={{ textAlign: 'center' }}>
+            <ConfidenceRing value={item.confidence} color={color} />
+          </div>
+          <div style={{ textAlign: 'center', flex: 1, minWidth: 150 }}>
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.2 }} style={{ marginBottom: 12 }}>
+              <ResultIcon size={32} color={color} style={{ margin: '0 auto' }} />
+            </motion.div>
             <span className={`badge ${getBadgeClass(item.result)}`}
-              style={{ fontSize: 15, padding: '8px 22px', fontWeight: 700 }}>{item.result}</span>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 10 }}>Classification</p>
+              style={{ fontSize: 18, padding: '10px 32px', fontWeight: 800, borderRadius: '12px' }}>{item.result}</span>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Primary Classification</p>
           </div>
         </div>
 
         {/* Probabilities */}
         {item.all_scores && Object.keys(item.all_scores).length > 0 && (
           <div style={{ background: '#f8fafc', borderRadius: 14, padding: '18px 20px', marginBottom: 18, border: '1px solid #e2e8f0' }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>
+            <p style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 16, borderLeft: '3px solid var(--accent-blue)', paddingLeft: 10 }}>
               Disease Probability Breakdown
             </p>
             {Object.entries(item.all_scores).sort(([, a], [, b]) => b - a).map(([l, s]) => <Bar key={l} label={l} score={s} />)}
@@ -135,12 +134,16 @@ function ReportModal({ item, onClose }) {
 
         {/* Recommendation */}
         <div style={{ background: `${color}08`, borderRadius: 12, padding: '14px 18px', marginBottom: 20, border: `1px solid ${color}18` }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>💡 Recommendation</p>
-          <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{getRecommendation(item.result)}</p>
+          <p style={{ fontSize: 13, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8 }}>💡 Clinical Recommendation</p>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, fontWeight: 500 }}>{getRecommendation(item.result)}</p>
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10 }} className="no-print">
+          <button onClick={() => window.print()} className="btn-gradient"
+            style={{ flex: 1, padding: '11px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#1e293b' }}>
+            🖨️ Print Report
+          </button>
           <button onClick={() => navigate('/test')} className="btn-gradient"
             style={{ flex: 1, padding: '11px', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <RotateCcw size={15} /> New Test

@@ -25,21 +25,8 @@ export default function Navbar() {
   return (
     <aside className="sidebar">
       {/* Logo */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 4px' }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: 10,
-            background: 'var(--gradient-primary)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(37,99,235,0.25)'
-          }}>
-            <Activity size={18} color="#fff" />
-          </div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.3px', color: 'var(--text-primary)' }}>BreatheX AI</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>Disease Classifier</div>
-          </div>
-        </div>
+      <div style={{ marginBottom: 32, padding: '0 4px' }}>
+        <img src="/logo-dark-text.png" alt="BreatheX AI" style={{ height: 36, objectFit: 'contain' }} />
       </div>
 
       {/* Nav items */}
