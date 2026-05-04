@@ -229,21 +229,17 @@ html, body, #root {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.35;
   z-index: 0;
 }
 
-/* Soft overlay for readability */
-.auth-bg::after {
-  content: '';
+/* Soft blur overlay to make UI pop */
+.auth-bg-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(240, 244, 248, 0.70) 0%,
-    rgba(233, 239, 246, 0.50) 50%,
-    rgba(240, 244, 248, 0.75) 100%
-  );
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1;
 }
 
 /* Centered auth card */
@@ -438,8 +434,28 @@ html, body, #root {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 40%, #0f172a 100%);
+  background-image: url('/auth-bg.png');
+  background-size: cover;
+  background-position: center;
   overflow: hidden;
+}
+
+.splash-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5); /* Dark overlay to make text readable */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 0;
+}
+
+.splash-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* ── Rings ── */
