@@ -18,11 +18,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-logout on 401
+// Auto-logout on 401, but don't redirect if already on login page or if it's a login attempt
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.endsWith('/auth/login');
+    const isLoginPage = window.location.pathname === '/login';
+
+    if (error.response?.status === 401 && !isLoginRequest && !isLoginPage) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

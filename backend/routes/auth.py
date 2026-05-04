@@ -10,8 +10,9 @@ from auth.jwt import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# ✅ Production-Ready Password Hashing (Argon2 avoids the bcrypt 72-byte limit bug)
-pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
+# ✅ Production-Ready Password Hashing
+# Supports both Argon2 (modern) and Bcrypt (legacy support)
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
 
 # ── PASSWORD HELPERS ─────────────────────────────────────────

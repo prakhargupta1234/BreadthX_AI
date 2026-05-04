@@ -1,30 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Lock, Activity } from 'lucide-react';
+import { User, Mail, Lock, Activity, AlertCircle } from 'lucide-react';
 
 export default function Signup() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Ensure fields are empty on mount and clear errors
+  useEffect(() => {
+    setForm({ name: '', email: '', password: '' });
+    setError('');
+  }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
+    if (form.password.length < 6) { 
+      const msg = 'Password must be at least 6 characters';
+      setError(msg);
+      toast.error(msg); 
+      return; 
+    }
     setLoading(true);
+    setError('');
     try {
       const res = await authAPI.signup(form);
       login(res.data.access_token, res.data.user);
       toast.success(`Account created! Welcome, ${res.data.user.name}!`);
       navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Signup failed');
+      const msg = err.response?.data?.detail || 'Signup failed. Please try again.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -52,13 +67,38 @@ export default function Signup() {
           <p style={{ color: 'var(--text-secondary)', marginTop: 8, fontSize: 14 }}>Join BreatheX AI — respiratory disease detection</p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="alert-error"
+            >
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>{error}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSubmit} autoComplete="off" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
           {fields.map(({ id, name, type, placeholder, label, icon: Icon }) => (
             <div key={name}>
               <label style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>{label}</label>
               <div style={{ position: 'relative' }}>
                 <Icon size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                <input id={id} name={name} type={type} placeholder={placeholder} value={form[name]} onChange={handleChange} required className="glass-input" style={{ width: '100%', padding: '12px 14px 12px 42px', fontSize: 14 }} />
+                <input 
+                  id={id} 
+                  name={name} 
+                  type={type} 
+                  placeholder={placeholder} 
+                  value={form[name]} 
+                  onChange={handleChange} 
+                  required 
+                  autoComplete={name === 'password' ? 'new-password' : (name === 'email' ? 'email' : 'name')} 
+                  className="glass-input" 
+                  style={{ width: '100%', padding: '12px 14px 12px 42px', fontSize: 14 }} 
+                />
               </div>
             </div>
           ))}

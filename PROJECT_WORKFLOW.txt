@@ -1,0 +1,82 @@
+================================================================================
+                    BREATHEX AI — PROJECT WORKFLOW & DOCUMENTATION
+================================================================================
+
+1. PROJECT OVERVIEW
+-------------------
+BreatheX AI is an advanced medical-grade AI platform designed to classify 
+respiratory diseases (Healthy, Asthma, COPD) using audio analysis of cough sounds.
+The system provides a seamless experience from audio recording to clinical-grade
+prediction reports.
+
+2. TECHNOLOGY STACK
+-------------------
+- Frontend: React (Vite), Framer Motion (Animations), Lucide React (Icons).
+- Backend: FastAPI (Python), Uvicorn (Server).
+- Database: MySQL (Relational storage for users and test history).
+- Machine Learning: PyTorch, Torchaudio, Librosa.
+- Authentication: JWT (JSON Web Tokens) with Argon2/Bcrypt hashing.
+
+3. MACHINE LEARNING ARCHITECTURE
+--------------------------------
+- Model Core: Pretrained ResNet18 (Deep Convolutional Neural Network).
+- Modifications: 
+    * Input layer modified to accept 1-channel Mel-spectrograms.
+    * Pretrained weights averaged across channels to maintain performance.
+    * Output layer replaced with a 3-class linear classifier (Asthma, COPD, Healthy).
+    * Dropout (0.5) added for regularization to prevent overfitting.
+- Audio Processing:
+    * All audio is resampled to 16,000 Hz.
+    * Converted into Mel-spectrograms (visual representation of sound frequencies).
+    * Normalized before being fed into the ResNet model.
+
+4. PROJECT FLOW & SYSTEM ARCHITECTURE
+-------------------------------------
+Step 1: Authentication
+    - User interacts with the React Frontend (Signup/Login).
+    - Frontend communicates with `/auth/signup` or `/auth/login`.
+    - Backend validates credentials against the MySQL database.
+    - Upon success, a JWT Token is generated and stored in the browser's LocalStorage.
+
+Step 2: Data Collection (The Test)
+    - User navigates to the "Test" page.
+    - User records audio via the browser's MediaRecorder API or uploads a file.
+    - The raw audio (WebM/WAV) is sent to the `/predict` endpoint via Multipart Form Data.
+
+Step 3: Backend Processing & Inference
+    - FastAPI receives the file and converts it to a standard 16-bit PCM WAV (if needed).
+    - The file is passed to the `DiseasePredictor` class (ML Engine).
+    - The model processes the audio and returns:
+        * Primary Prediction (e.g., "Asthma").
+        * Confidence Percentage (e.g., "94.2%").
+        * Probability Breakdown for all 3 classes.
+
+Step 4: Persistence & Results
+    - The prediction result is saved into the `predictions` table in MySQL.
+    - The API returns the result JSON to the React frontend.
+    - Frontend displays a premium result modal with interactive charts.
+
+Step 5: History & Monitoring
+    - Users can visit the "History" page.
+    - Frontend calls `GET /history/` with the JWT token.
+    - Backend fetches only the records belonging to the authenticated user.
+
+5. API COMMUNICATION (Technical Details)
+----------------------------------------
+- Base URL: http://localhost:8000
+- Headers: All protected routes require `Authorization: Bearer <token>`.
+- Format: Requests and responses use standard JSON (except for file uploads).
+- Error Handling:
+    * 401: Token expired or invalid (triggers auto-logout).
+    * 422: Validation error (wrong data format).
+    * 500: Server-side or ML processing error.
+
+6. DATABASE SCHEMA
+------------------
+- `users`: Stores id, name, email (unique), hashed_password, and created_at.
+- `predictions`: Stores id, user_id (foreign key), filename, result, confidence, 
+  all_scores (JSON string), and timestamp.
+
+================================================================================
+                         Developed by BreatheX AI Team
+================================================================================
