@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 import os
@@ -13,6 +13,7 @@ from models.prediction import Prediction
 from models.user import User
 from schemas.prediction import PredictionOut
 from auth.dependencies import get_current_user
+from auth.email import send_report_email
 
 # ── Load the ML predictor once at module level (not per-request) ───────────────
 # Add root ml/ to path (backend/ lives one level below project root)
@@ -65,6 +66,7 @@ def _convert_to_wav(src_path: str, dst_path: str) -> bool:
 @router.post("/predict")
 def predict_audio(
     file: UploadFile = File(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -120,6 +122,9 @@ def predict_audio(
         db.add(record)
         db.commit()
         db.refresh(record)
+
+        # Send report email in background
+        background_tasks.add_task(send_report_email, current_user.email, ml_result["prediction"], confidence_pct)
 
         return {
             "id": record.id,

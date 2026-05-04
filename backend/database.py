@@ -1,13 +1,14 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from urllib.parse import quote_plus
+from config import settings
 
 # ── Credentials ────────────────────────────────────────────────────────────────
-DB_NAME = "respiratory_ai"
-DB_USER = "root"
-DB_PASS = "prakhar22@"          # raw password (may contain special chars)
-DB_HOST = "localhost"
-DB_PORT = 3306
+DB_NAME = settings.DB_NAME
+DB_USER = settings.DB_USER
+DB_PASS = settings.DB_PASS
+DB_HOST = settings.DB_HOST
+DB_PORT = settings.DB_PORT
 
 # URL-encode the password so '@', '#', etc. don't break the connection string
 _encoded_pass = quote_plus(DB_PASS)

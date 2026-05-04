@@ -32,10 +32,11 @@ export default function Signup() {
     setLoading(true);
     setError('');
     try {
-      const res = await authAPI.signup(form);
-      login(res.data.access_token, res.data.user);
-      toast.success(`Account created! Welcome, ${res.data.user.name}!`);
-      navigate('/dashboard');
+      await authAPI.signup(form);
+      toast.success('Registration successful! Please check your email to activate your account.', {
+        duration: 6000,
+      });
+      navigate('/login');
     } catch (err) {
       const msg = err.response?.data?.detail || 'Signup failed. Please try again.';
       setError(msg);

@@ -18,6 +18,7 @@ class UserOut(BaseModel):
     id: int
     name: str
     email: str
+    is_verified: bool
     created_at: datetime
 
     class Config:
