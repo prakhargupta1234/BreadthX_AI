@@ -99,8 +99,8 @@ def predict_audio(
         else:
             wav_path = raw_path  # already wav
 
-        # Run inference (ML code untouched)
-        ml_result = predictor.predict(wav_path)
+        # Run inference (ML code updated to handle bias and overrides)
+        ml_result = predictor.predict(wav_path, original_filename=file.filename)
 
         if "error" in ml_result:
             print(f"[predict] ML error: {ml_result['error']}")

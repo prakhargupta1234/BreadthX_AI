@@ -21,61 +21,79 @@ prediction reports.
 --------------------------------
 - Model Core: Pretrained ResNet18 (Deep Convolutional Neural Network).
 - Modifications: 
-    * Input layer modified to accept 1-channel Mel-spectrograms.
+    * Input layer modified to accept 1-channel Mel-spectrograms (instead of 3-channel RGB).
     * Pretrained weights averaged across channels to maintain performance.
     * Output layer replaced with a 3-class linear classifier (Asthma, COPD, Healthy).
     * Dropout (0.5) added for regularization to prevent overfitting.
 - Audio Processing:
-    * All audio is resampled to 16,000 Hz.
-    * Converted into Mel-spectrograms (visual representation of sound frequencies).
-    * Normalized before being fed into the ResNet model.
+    * All audio is resampled to 16,000 Hz for consistency.
+    * Converted into Mel-spectrograms (128 mel bins, 1024 FFT window).
+    * Normalized into Log-scale (dB) before being fed into the ResNet model.
 
-4. PROJECT FLOW & SYSTEM ARCHITECTURE
+4. DETAILED INTERNAL WORKING & ML PIPELINE
+------------------------------------------
+Step 1: Signal Acquisition & Normalization
+    * The system accepts WAV audio files. 
+    * Audio is loaded using the Librosa library to ensure cross-platform compatibility.
+    * Signal is resampled to a fixed 16kHz sample rate to match the model's training parameters.
+
+Step 2: Feature Engineering (Spectrogram Generation)
+    * The raw time-series audio signal is converted into a Mel-Spectrogram using 
+      Torchaudio's GPU-accelerated transforms.
+    * Parameters: n_fft=1024, hop_length=512, n_mels=128.
+    * The power spectrogram is converted to a decibel (dB) scale using `AmplitudeToDB`.
+    * Result: A 2D image-like representation where Y-axis is frequency (mel-scale) 
+      and X-axis is time.
+
+Step 3: Temporal Standardization
+    * To handle variable-length cough recordings, the system uses a fixed-width window 
+      of 400 temporal frames (~12.8 seconds at 16kHz).
+    * Short clips are Zero-Padded to reach 400 frames.
+    * Long clips are Truncated at 400 frames.
+
+Step 4: Neural Network Inference
+    * The 128x400 feature matrix is fed into the modified ResNet18.
+    * The first layer extracts low-level audio textures (spectro-temporal features).
+    * Deeper residual blocks combine these features into high-level abstractions 
+      representing respiratory patterns.
+    * The final Linear layer outputs raw "logits" for each disease class.
+
+Step 5: Probability Computation
+    * A Softmax function is applied to the logits to generate a probability distribution.
+    * The class with the highest probability is selected as the Primary Prediction.
+    * The Confidence score is the probability of the predicted class.
+
+5. PROJECT FLOW & SYSTEM ARCHITECTURE
 -------------------------------------
-Step 1: Authentication
+1. Authentication:
     - User interacts with the React Frontend (Signup/Login).
-    - Frontend communicates with `/auth/signup` or `/auth/login`.
-    - Backend validates credentials against the MySQL database.
-    - Upon success, a JWT Token is generated and stored in the browser's LocalStorage.
+    - Backend validates credentials against MySQL.
+    - JWT Token is generated and stored for session management.
 
-Step 2: Data Collection (The Test)
-    - User navigates to the "Test" page.
-    - User records audio via the browser's MediaRecorder API or uploads a file.
-    - The raw audio (WebM/WAV) is sent to the `/predict` endpoint via Multipart Form Data.
+2. Prediction Pipeline:
+    - User uploads a .wav file via the "Test" page.
+    - Frontend sends the file to the `/predict` endpoint.
+    - FastAPI invokes the `DiseasePredictor` class.
+    - Inference is performed on the provided audio.
+    - Results are stored in the database for the user's history.
 
-Step 3: Backend Processing & Inference
-    - FastAPI receives the file and converts it to a standard 16-bit PCM WAV (if needed).
-    - The file is passed to the `DiseasePredictor` class (ML Engine).
-    - The model processes the audio and returns:
-        * Primary Prediction (e.g., "Asthma").
-        * Confidence Percentage (e.g., "94.2%").
-        * Probability Breakdown for all 3 classes.
-
-Step 4: Persistence & Results
-    - The prediction result is saved into the `predictions` table in MySQL.
-    - The API returns the result JSON to the React frontend.
-    - Frontend displays a premium result modal with interactive charts.
-
-Step 5: History & Monitoring
-    - Users can visit the "History" page.
-    - Frontend calls `GET /history/` with the JWT token.
-    - Backend fetches only the records belonging to the authenticated user.
-
-5. API COMMUNICATION (Technical Details)
-----------------------------------------
-- Base URL: http://localhost:8000
-- Headers: All protected routes require `Authorization: Bearer <token>`.
-- Format: Requests and responses use standard JSON (except for file uploads).
-- Error Handling:
-    * 401: Token expired or invalid (triggers auto-logout).
-    * 422: Validation error (wrong data format).
-    * 500: Server-side or ML processing error.
+3. Reporting & Visualization:
+    - Frontend receives JSON results containing prediction and all class probabilities.
+    - An interactive report modal is rendered using Recharts and Framer Motion.
+    - Users can download/print the report as an official clinical document.
 
 6. DATABASE SCHEMA
 ------------------
 - `users`: Stores id, name, email (unique), hashed_password, and created_at.
 - `predictions`: Stores id, user_id (foreign key), filename, result, confidence, 
   all_scores (JSON string), and timestamp.
+
+7. DEVELOPMENT & DEPLOYMENT
+---------------------------
+- Model training was performed using Cross-Entropy Loss and Adam Optimizer.
+- Data Augmentation (SpecAugment: Time & Frequency masking) was used during training 
+  to increase model robustness against different recording environments.
+- Deployment utilizes Uvicorn as an ASGI server for high-performance async processing.
 
 ================================================================================
                          Developed by BreatheX AI Team
